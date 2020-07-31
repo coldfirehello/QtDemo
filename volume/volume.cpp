@@ -42,8 +42,9 @@ void Volume::initUI()
                             "QSlider::add-page:vertical{background-color:#FFFFFF;width:4px;border-radius:2px;}"
                             "QSlider::sub-page:vertical{background-color:rgba(196, 196, 196, 0.5);width:4px;border-radius:2px;}"
                             "QSlider::groove:vertical{background:transparent;width:4px;border-radius:2px;}"
-                            "QSlider::handle:vertical{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}"
-                            "QSlider::handle:vertical:hover{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}");
+                            "QSlider::handle:vertical{height:20px;width:20px;border-image:url(:/images/handle.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                            "QSlider::handle:vertical:hover{height:20px;width:20px;border-image:url(:/images/plus.png);margin-top:-2px;margin-bottom:-2px;margin-left:-10px;margin-right:-10px;}"
+                            "QSlider::handle:vertical:pressed{height:20px;width:20px;border-image:url(:/images/plus.png);margin-top:-2px;margin-bottom:-2px;margin-left:-10px;margin-right:-10px;}");
     connect(m_slider, &QSlider::valueChanged, this, &Volume::onVolumeChanged);
 
     QVBoxLayout* vLayout = new QVBoxLayout();
@@ -66,11 +67,12 @@ void Volume::onVolumeChanged()
         if (value == 0)
         {
             m_slider->setStyleSheet("QSlider{background:transparent;}"
-                                    "QSlider::add-page:vertical{background-color:transparent;width:4px;border-radius:2px;}"
+                                    "QSlider::add-page:vertical{background-color:rgba(0, 0, 0, 0.8);width:4px;border-radius:2px;}"
                                     "QSlider::sub-page:vertical{background-color:rgba(196, 196, 196, 0.5);width:4px;border-radius:2px;}"
                                     "QSlider::groove:vertical{background:transparent;width:4px;border-radius:2px;}"
-                                    "QSlider::handle:vertical{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}"
-                                    "QSlider::handle:vertical:hover{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}");
+                                    "QSlider::handle:vertical{height:20px;width:21px;border-image:url(:/images/handle.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                                    "QSlider::handle:vertical:hover{height:20px;width:21px;border-image:url(:/images/plus.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                                    "QSlider::handle:vertical:pressed{height:20px;width:21px;border-image:url(:/images/plus.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}");
         }
         else if (value > 0 && value < 100)
         {
@@ -78,17 +80,19 @@ void Volume::onVolumeChanged()
                                     "QSlider::add-page:vertical{background-color:#FFFFFF;width:4px;border-radius:2px;}"
                                     "QSlider::sub-page:vertical{background-color:rgba(196, 196, 196, 0.5);width:4px;border-radius:2px;}"
                                     "QSlider::groove:vertical{background:transparent;width:4px;border-radius:2px;}"
-                                    "QSlider::handle:vertical{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}"
-                                    "QSlider::handle:vertical:hover{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}");
+                                    "QSlider::handle:vertical{height:20px;width:21px;border-image:url(:/images/handle.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                                    "QSlider::handle:vertical:hover{height:20px;width:21px;border-image:url(:/images/plus.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                                    "QSlider::handle:vertical:pressed{height:20px;width:21px;border-image:url(:/images/plus.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}");
         }
         else
         {
             m_slider->setStyleSheet("QSlider{background:transparent;}"
                                     "QSlider::add-page:vertical{background-color:#FFFFFF;width:4px;border-radius:2px;}"
-                                    "QSlider::sub-page:vertical{background-color:transparent;width:4px;border-radius:2px;}"
+                                    "QSlider::sub-page:vertical{background-color:rgba(0, 0, 0, 0.8);width:4px;border-radius:2px;}"
                                     "QSlider::groove:vertical{background:transparent;width:4px;border-radius:2px;}"
-                                    "QSlider::handle:vertical{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}"
-                                    "QSlider::handle:vertical:hover{height:20px;width:21px;border-image:url(:/images/handle.png);margin: -0 -10px;}");
+                                    "QSlider::handle:vertical{height:20px;width:21px;border-image:url(:/images/handle.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                                    "QSlider::handle:vertical:hover{height:20px;width:21px;border-image:url(:/images/plus.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                                    "QSlider::handle:vertical:pressed{height:20px;width:21px;border-image:url(:/images/plus.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}");
         }
 
         emit signalVolumeChanged(value);
