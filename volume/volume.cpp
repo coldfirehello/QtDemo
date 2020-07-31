@@ -43,8 +43,8 @@ void Volume::initUI()
                             "QSlider::sub-page:vertical{background-color:rgba(196, 196, 196, 0.5);width:4px;border-radius:2px;}"
                             "QSlider::groove:vertical{background:transparent;width:4px;border-radius:2px;}"
                             "QSlider::handle:vertical{height:20px;width:20px;border-image:url(:/images/handle.png);margin-top:0px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
-                            "QSlider::handle:vertical:hover{height:20px;width:20px;border-image:url(:/images/plus.png);margin-top:-2px;margin-bottom:-2px;margin-left:-10px;margin-right:-10px;}"
-                            "QSlider::handle:vertical:pressed{height:20px;width:20px;border-image:url(:/images/plus.png);margin-top:-2px;margin-bottom:-2px;margin-left:-10px;margin-right:-10px;}");
+                            "QSlider::handle:vertical:hover{height:20px;width:20px;border-image:url(:/images/plus.png);margin-top:-2px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}"
+                            "QSlider::handle:vertical:pressed{height:20px;width:20px;border-image:url(:/images/plus.png);margin-top:-2px;margin-bottom:0px;margin-left:-8px;margin-right:-8px;}");
     connect(m_slider, &QSlider::valueChanged, this, &Volume::onVolumeChanged);
 
     QVBoxLayout* vLayout = new QVBoxLayout();
