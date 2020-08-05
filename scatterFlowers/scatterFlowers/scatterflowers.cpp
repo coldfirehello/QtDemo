@@ -245,14 +245,14 @@ void ScatterFlowers::updateGraphicsInfo()
 
 int ScatterFlowers::graphicsCount()
 {
-    const int kDilutionRatio = 20;
-    const int kMaxGraphicsCount = 60;
+    const int kDilutionRatio = 20;  //稀释20倍
+    const int kMaxGraphicsCount = 60;   //最大数量60
 
     int ret = 0;
 
     m_maxGraphicsCount = this->width() * this->height() / (m_maxSideLength * m_maxSideLength * kDilutionRatio);
 
-    ret = m_maxGraphicsCount * 0.618;
+    ret = m_maxGraphicsCount * 0.618;   //黄金比例
 
     ret = (ret > kMaxGraphicsCount) ? kMaxGraphicsCount : ret;
 
