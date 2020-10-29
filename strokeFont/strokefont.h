@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QFont>
+#include <QPixmap>
 
 class StrokeFont : public QWidget
 {
@@ -25,7 +26,14 @@ private:
     QFont m_font;
     int m_contentWidth;
     int m_fontWidth;
+    int m_fontHeight;
+    int m_angle;
     QColor m_outLineColor;
     QColor m_contentColor;
+    QPixmap m_strokeFontPixmap;
+
+private:
+    bool drawStrokeFontPixmap();
+    QSize minSize(int fontWidth, int fontHeight, qreal angle);
 };
 #endif // STROKEFONT_H
