@@ -112,44 +112,48 @@ bool StrokeFont::drawStrokeFontPixmap()
     if(!m_text.isEmpty())
     {
         QPixmap srcPixmap(m_contentWidth, m_fontHeight);
-        srcPixmap.fill(Qt::transparent);
-
-        QPainterPath srcPath;
-        srcPath.addText(m_drawXoffset, m_fontPixelSize, m_font, m_text);
-
-        QPainter srcpainter(&srcPixmap);
-
-        QPen pen;
-        pen.setColor(m_outLineColor);
-        pen.setStyle(Qt::SolidLine);
-        pen.setWidth(m_fontWidth);
-
-        srcpainter.setRenderHint(QPainter::Antialiasing);
-        srcpainter.setRenderHint(QPainter::SmoothPixmapTransform);
-        srcpainter.strokePath(srcPath, pen);
-        srcpainter.fillPath(srcPath, QBrush(m_contentColor));
-
-        QPixmap pixmap(this->size());
-        pixmap.fill(Qt::transparent);
-        m_strokeFontPixmap = pixmap;
-
-        QPainter painter(&m_strokeFontPixmap);
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setRenderHint(QPainter::SmoothPixmapTransform);
-
-        if(m_rotateAngle > 0)
         {
-           painter.translate(m_rotateOffsetLength, 0);
-        }
-        else
-        {
-            painter.translate(0, m_rotateOffsetLength);
+            srcPixmap.fill(Qt::transparent);
+
+            QPainterPath srcPath;
+            srcPath.addText(m_drawXoffset, m_fontPixelSize, m_font, m_text);
+
+            QPainter srcpainter(&srcPixmap);
+
+            QPen pen;
+            pen.setColor(m_outLineColor);
+            pen.setStyle(Qt::SolidLine);
+            pen.setWidth(m_fontWidth);
+
+            srcpainter.setRenderHint(QPainter::Antialiasing);
+            srcpainter.setRenderHint(QPainter::SmoothPixmapTransform);
+            srcpainter.strokePath(srcPath, pen);
+            srcpainter.fillPath(srcPath, QBrush(m_contentColor));
         }
 
-        painter.rotate(m_rotateAngle);
+        {
+            QPixmap pixmap(this->size());
+            pixmap.fill(Qt::transparent);
+            m_strokeFontPixmap = pixmap;
 
-        QRect rect(0, 0, srcPixmap.width(), srcPixmap.height());
-        painter.drawPixmap(rect, srcPixmap);
+            QPainter painter(&m_strokeFontPixmap);
+            painter.setRenderHint(QPainter::Antialiasing);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+            if(m_rotateAngle > 0)
+            {
+               painter.translate(m_rotateOffsetLength, 0);
+            }
+            else
+            {
+                painter.translate(0, m_rotateOffsetLength);
+            }
+
+            painter.rotate(m_rotateAngle);
+
+            QRect rect(0, 0, srcPixmap.width(), srcPixmap.height());
+            painter.drawPixmap(rect, srcPixmap);
+        }
 
         ret = true;
 
