@@ -15,25 +15,28 @@ public:
 
     void setText(const QString& text);
     void setStrokeFont(const QColor& outLineColor, const QColor& fontColor, int fontWidth, int fontPixelSize, const QString& family = "");
+    void setRotate(int angle);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    const int m_x;
+    const int m_drawXoffset;
     int m_fontPixelSize;
     QString m_text;
     QFont m_font;
     int m_contentWidth;
     int m_fontWidth;
     int m_fontHeight;
-    int m_angle;
+    int m_rotateAngle;
+    int m_rotateOffsetLength;
     QColor m_outLineColor;
     QColor m_contentColor;
     QPixmap m_strokeFontPixmap;
 
 private:
+    void updateStrokeFontPixmap();
     bool drawStrokeFontPixmap();
-    QSize minSize(int fontWidth, int fontHeight, qreal angle);
+    QSize minSize(int fontWidth, int fontHeight, int angle);
 };
 #endif // STROKEFONT_H
