@@ -1,26 +1,21 @@
 ﻿#include "strokefont.h"
 #include <QFontMetrics>
-#include <QGraphicsDropShadowEffect>
 #include <QStyleOption>
 #include <QPainter>
 #include <QPainterPath>
-#include <QFontDatabase>
-
-#define PI acos(-1)
+#include <QImage>
 
 StrokeFont::StrokeFont(QWidget *parent): QWidget(parent),
-    m_drawXoffset(2),
     m_fontPixelSize(20),
     m_fontWidth(2),
     m_rotateAngle(0),
-    m_rotateOffsetLength(0),
     m_outLineColor("#FFA600"),
     m_contentColor("#FFFFFF")
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
-    m_fontHeight = m_fontPixelSize + m_fontWidth * 2;
+    m_contenHeight = m_fontPixelSize + m_fontWidth * 2;
 
     m_font.setPixelSize(m_fontPixelSize);
     m_font.setWeight(m_fontWidth);
@@ -45,10 +40,9 @@ void StrokeFont::setStrokeFont(const QColor& outLineColor, const QColor& fontCol
     m_contentColor = fontColor;
     m_fontWidth = fontWidth;
     m_fontPixelSize = fontPixelSize;
-    m_fontHeight = m_fontPixelSize + m_fontWidth * 2;
+    m_contenHeight = m_fontPixelSize + m_fontWidth * 2;
 
     m_font.setPixelSize(m_fontPixelSize);
-    m_font.setWeight(m_fontWidth);
     if(!family.isEmpty())
     {
         m_font.setFamily(family);
@@ -73,6 +67,11 @@ void StrokeFont::setRotate(int angle)
     updateStrokeFontPixmap();
 }
 
+QPixmap StrokeFont::strokeFontPixmap()
+{
+    return m_strokeFontPixmap;
+}
+
 void StrokeFont::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event)
@@ -91,18 +90,11 @@ void StrokeFont::paintEvent(QPaintEvent *event)
 void StrokeFont::updateStrokeFontPixmap()
 {
     QFontMetrics fontMetrics(m_font);
-    m_contentWidth = fontMetrics.width(m_text) + m_drawXoffset * 2;
-
-    QSize size(m_contentWidth, m_fontHeight);
-
-    if(0 != m_rotateAngle)
-    {
-        size = minSize(m_contentWidth, m_fontHeight, m_rotateAngle);
-    }
-
-    setFixedSize(size);
+    m_contentWidth = fontMetrics.width(m_text) + m_fontWidth * 2;
 
     drawStrokeFontPixmap();
+
+    setFixedSize(m_strokeFontPixmap.size());
 }
 
 bool StrokeFont::drawStrokeFontPixmap()
@@ -111,12 +103,20 @@ bool StrokeFont::drawStrokeFontPixmap()
 
     if(!m_text.isEmpty())
     {
-        QPixmap srcPixmap(m_contentWidth, m_fontHeight);
+        int maxLength = m_contentWidth > m_contenHeight ? m_contentWidth : m_contenHeight;
+        maxLength *= 2;
+
+        int x = (maxLength - m_contentWidth) / 2;
+        int y = (maxLength - m_contenHeight) / 2;
+        int centerX = maxLength / 2;
+        int centerY = centerX;
+
+        QPixmap srcPixmap(maxLength, maxLength);
         {
             srcPixmap.fill(Qt::transparent);
 
             QPainterPath srcPath;
-            srcPath.addText(m_drawXoffset, m_fontPixelSize, m_font, m_text);
+            srcPath.addText(x, y + m_contenHeight, m_font, m_text);
 
             QPainter srcpainter(&srcPixmap);
 
@@ -127,32 +127,16 @@ bool StrokeFont::drawStrokeFontPixmap()
 
             srcpainter.setRenderHint(QPainter::Antialiasing);
             srcpainter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+            srcpainter.translate(centerX, centerY);
+            srcpainter.rotate(m_rotateAngle);
+            srcpainter.translate(-centerX, -centerY);
+
             srcpainter.strokePath(srcPath, pen);
             srcpainter.fillPath(srcPath, QBrush(m_contentColor));
-        }
 
-        {
-            QPixmap pixmap(this->size());
-            pixmap.fill(Qt::transparent);
-            m_strokeFontPixmap = pixmap;
-
-            QPainter painter(&m_strokeFontPixmap);
-            painter.setRenderHint(QPainter::Antialiasing);
-            painter.setRenderHint(QPainter::SmoothPixmapTransform);
-
-            if(m_rotateAngle > 0)
-            {
-               painter.translate(m_rotateOffsetLength, 0);
-            }
-            else
-            {
-                painter.translate(0, m_rotateOffsetLength);
-            }
-
-            painter.rotate(m_rotateAngle);
-
-            QRect rect(0, 0, srcPixmap.width(), srcPixmap.height());
-            painter.drawPixmap(rect, srcPixmap);
+            QImage image =  minSizeStrokenFontImage(srcPixmap.toImage());
+            m_strokeFontPixmap = QPixmap::fromImage(image);
         }
 
         ret = true;
@@ -163,47 +147,56 @@ bool StrokeFont::drawStrokeFontPixmap()
     return ret;
 }
 
-/*
- *  L1(0,0)—————————————— +x
-           |L1—— —— —— R1
-           ||          |
-           ||          |
-           |L2—— —— —— R2
-          +Y
-
-    L1是原点，L1、L2、R1、R2是待旋转矩形4个坐标点
-*/
-
-QSize StrokeFont::minSize(int fontWidth, int fontHeight, int angle)
+QImage StrokeFont::minSizeStrokenFontImage(const QImage& image)
 {
-    QSize ret;
+    int x1 = image.width() - 1, x2 = 0, y1 = image.height() - 1, y2 = 0;
 
-    double radian = PI * angle / 180;
-
-    if(angle > 0)
+    for(int x = 0; x < image.width(); ++x)
     {
-        QPoint rotateL1(0, 0);
-        QPoint rotateL2(0 * cos(radian) - fontHeight * sin(radian), fontHeight * cos(radian) + 0 * sin(radian));
-        QPoint rotateR1(fontWidth * cos(radian) - 0 * sin(radian), 0 * cos(radian) + fontWidth * sin(radian));
-        QPoint rotateR2(fontWidth * cos(radian) - fontHeight * sin(radian), fontHeight * cos(radian) + fontWidth * sin(radian));
+        for(int y = 0; y < image.height(); ++y)
+        {
+            QColor color = image.pixelColor(x, y);
 
-        ret.setWidth(rotateR1.x() - rotateL2.x() + 1);
-        ret.setHeight(rotateR2.y() + 1);
+            if(color.red() != 0 || color.green() != 0 || color.blue() != 0)
+            {
+                if(y1 > y)
+                {
+                    y1 = y;
+                }
 
-        m_rotateOffsetLength = abs(rotateL2.x()) + 1;
+                if(y2 < y)
+                {
+                    y2 = y;
+                }
+
+                if(x1 > x)
+                {
+                    x1 = x;
+                }
+
+                if(x2 < x)
+                {
+                    x2 = x;
+                }
+            }
+        }
     }
-    else
+
+    int width = x2 - x1 + 1;
+    int height = y2 - y1 + 1;
+
+    QImage ret(QSize(width, height), image.format());
+
+    for(int x = x1, i = 0; x <= x2; ++x, ++i)
     {
-        QPoint rotateL1(0, 0);
-        QPoint rotateL2(0 * cos(radian) - fontHeight * sin(radian), fontHeight * cos(radian) + 0 * sin(radian));
-        QPoint rotateR1(fontWidth * cos(radian) - 0 * sin(radian), 0 * cos(radian) + fontWidth * sin(radian));
-        QPoint rotateR2(fontWidth * cos(radian) - fontHeight * sin(radian), fontHeight * cos(radian) + fontWidth * sin(radian));
-
-        ret.setWidth(rotateR2.x() + 1);
-        ret.setHeight(rotateL2.y() - rotateR1.y() + 1);
-
-        m_rotateOffsetLength = abs(rotateR1.y()) + 1;
+        for(int y = y1, j = 0; y <= y2; ++y, ++j)
+        {
+            QColor color = image.pixelColor(x, y);
+            ret.setPixelColor(i, j, color);
+        }
     }
+
+    ret.save("D:/123.png");
 
     return ret;
 }
