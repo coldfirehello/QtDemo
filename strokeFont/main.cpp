@@ -1,4 +1,5 @@
 ﻿#include <QApplication>
+#include <QDebug>
 #include "strokefont.h"
 
 int main(int argc, char *argv[])
@@ -7,9 +8,11 @@ int main(int argc, char *argv[])
 
     StrokeFont w;
 
-    w.setRotate(-73);
+    w.setRotate(-13);
     w.setText(QStringLiteral("啊撒打@#——算打good123奥术大师"));
-    w.setStrokeFont(QColor("#FFA600"), QColor("#FFFFFF"), 8, 30);
+    w.setStrokeFont(QColor("#000000"), QColor("#FFFFFF"), 8, 30);   //FFA600    000000
+
+    qDebug() << "size = " << w.size();
 
     w.show();
 
