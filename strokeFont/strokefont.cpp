@@ -157,7 +157,7 @@ QImage StrokeFont::minSizeStrokenFontImage(const QImage& image)
         {
             QColor color = image.pixelColor(x, y);
 
-            if(color.red() != 0 || color.green() != 0 || color.blue() != 0)
+            if(color.alphaF() || color.red() != 0 || color.green() != 0 || color.blue() != 0)
             {
                 if(y1 > y)
                 {
