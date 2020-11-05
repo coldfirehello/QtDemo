@@ -18,7 +18,9 @@ public:
     ~FlowLayout();
 
     void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
+    void setHorizontalSpacing(int hSpacing);
     int horizontalSpacing() const;
+    void setVerticalSpacing(int vSpacing);
     int verticalSpacing() const;
     Qt::Orientations expandingDirections() const Q_DECL_OVERRIDE;
     bool hasHeightForWidth() const Q_DECL_OVERRIDE;

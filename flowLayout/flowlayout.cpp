@@ -27,6 +27,14 @@ void FlowLayout::addItem(QLayoutItem *item)
     x_itemList.append(item);
 }
 
+void FlowLayout::setHorizontalSpacing(int hSpacing)
+{
+    if(hSpacing >= 0)
+    {
+        x_hSpace = hSpacing;
+    }
+}
+
 int FlowLayout::horizontalSpacing() const
 {
     if (x_hSpace >= 0)
@@ -39,12 +47,22 @@ int FlowLayout::horizontalSpacing() const
     }
 }
 
+void FlowLayout::setVerticalSpacing(int vSpacing)
+{
+    if(vSpacing >= 0)
+    {
+        x_vSpace = vSpacing;
+    }
+}
+
 int FlowLayout::verticalSpacing() const
 {
-    if (x_vSpace >= 0) {
+    if (x_vSpace >= 0)
+    {
         return x_vSpace;
     }
-    else {
+    else
+    {
         return smartSpacing(QStyle::PM_LayoutVerticalSpacing);
     }
 }
