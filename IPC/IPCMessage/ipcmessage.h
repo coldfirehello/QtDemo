@@ -7,6 +7,13 @@
 
 #define MAIN_PROC   1
 
+enum IPC_MsgType
+{
+    MsgType_ERR = -1,
+    MsgType_Modules_Login,
+    MsgType_Modules_Exit
+};
+
 struct IPC_HEAD
 {
     int sender;         //发送者ID
