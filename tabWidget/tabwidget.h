@@ -1,15 +1,14 @@
 ﻿#ifndef TABWIDGET_H
 #define TABWIDGET_H
 
-#include <QWidget>
+#include <QPushButton>
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QStackedLayout>
+#include "flowlayout.h"
 
-class FlowLayout;
-
-class TabLabel : public QWidget
+class TabLabel : public QPushButton
 {
     Q_OBJECT
 
@@ -18,14 +17,6 @@ public:
     ~TabLabel();
 
     void setWidget(QWidget* widget);
-
-signals:
-    void clicked();
-
-protected:
-    void enterEvent(QEvent *event) override;
-    void leaveEvent(QEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     QHBoxLayout* m_centerLayout;
@@ -55,9 +46,17 @@ public:
     void remove(int index);
 
     void setContentsMargins(const QMargins& margins);
+    void setLabelMargins(const QMargins& margins);
     void setSpacing(int spacing);
+    int spacing();
     void setTabLabelSpacing(int spacing);
     void setTabPosition(TabPosition position);
+    void setTabLabelStyleSheet(const QString& styleSheet);
+    int currentIndex() const;
+    void setCurrentIndex(int index);
+
+signals:
+    void currentChanged(int index);
 
 private slots:
     void stackedWidgetChanged();
@@ -65,7 +64,11 @@ private slots:
 private:
     QGridLayout* m_mainLayout;
     FlowLayout* m_tabLayout;
-    QStackedLayout* m_contentsLayout;
+    QHBoxLayout* m_contentsLayout;
+    QStackedLayout* m_contentsStackedLayout;
+    QWidget* m_tabLabelBackgroundWidget;
+    QHBoxLayout* m_tabLabelBackgroundHLayout;
+    QVBoxLayout* m_tabLabelBackgroundVLayout;
     QWidget* m_tabLabelWidget;
     TabPosition m_tabPosition;
     int m_spacing;

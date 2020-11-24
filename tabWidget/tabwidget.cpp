@@ -1,9 +1,6 @@
 ﻿#include "tabwidget.h"
-#include <QCursor>
-#include <QDebug>
-#include "flowlayout.h"
 
-TabLabel::TabLabel(QWidget *parent) : QWidget(parent),
+TabLabel::TabLabel(QWidget *parent) : QPushButton(parent),
     m_centerLayout(nullptr)
 {
     initUI();
@@ -19,35 +16,8 @@ void TabLabel::setWidget(QWidget *widget)
     if(widget != nullptr && m_centerLayout != nullptr)
     {
         m_centerLayout->addWidget(widget);
-        resize(widget->size());
+        setFixedSize(widget->size());
     }
-}
-
-void TabLabel::enterEvent(QEvent *event)
-{
-    Q_UNUSED(event)
-
-    QCursor cursor;
-    cursor.setShape(Qt::PointingHandCursor);
-
-    setCursor(cursor);
-}
-
-void TabLabel::leaveEvent(QEvent *event)
-{
-    Q_UNUSED(event)
-
-    QCursor cursor;
-    cursor.setShape(Qt::ArrowCursor);
-
-    setCursor(cursor);
-}
-
-void TabLabel::mouseReleaseEvent(QMouseEvent *event)
-{
-    Q_UNUSED(event)
-
-    emit clicked();
 }
 
 void TabLabel::initUI()
@@ -57,12 +27,18 @@ void TabLabel::initUI()
     m_centerLayout->setSpacing(0);
 
     setLayout(m_centerLayout);
+    setStyleSheet("QPushButton{background:transparent;border:none;padding:0px;}");
+    setCursor(Qt::PointingHandCursor);
 }
 
 TabWidget::TabWidget(QWidget *parent) : QWidget(parent),
     m_mainLayout(nullptr),
     m_tabLayout(nullptr),
     m_contentsLayout(nullptr),
+    m_contentsStackedLayout(nullptr),
+    m_tabLabelBackgroundWidget(nullptr),
+    m_tabLabelBackgroundHLayout(nullptr),
+    m_tabLabelBackgroundVLayout(nullptr),
     m_tabLabelWidget(nullptr),
     m_tabPosition(North),
     m_spacing(0)
@@ -77,7 +53,7 @@ TabWidget::~TabWidget()
 
 void TabWidget::addTab(QWidget *page, QWidget *label)
 {
-    if(page != nullptr && label != nullptr && m_tabLayout != nullptr && m_contentsLayout != nullptr)
+    if(page != nullptr && label != nullptr && m_tabLayout != nullptr && m_contentsStackedLayout != nullptr)
     {
         TabLabel* item = new TabLabel(this);
         item->setWidget(label);
@@ -89,13 +65,13 @@ void TabWidget::addTab(QWidget *page, QWidget *label)
 
         updateTabLabelWidget();
 
-        m_contentsLayout->addWidget(page);
+        m_contentsStackedLayout->addWidget(page);
     }
 }
 
 void TabWidget::remove(int index)
 {
-    if(m_contentsLayout != nullptr && m_tabLayout != nullptr && -1 < index && index < m_contentsLayout->count() && index < m_tabLayout->count())
+    if(m_contentsStackedLayout != nullptr && m_tabLayout != nullptr && -1 < index && index < m_contentsStackedLayout->count() && index < m_tabLayout->count())
     {
         QLayoutItem* label = m_tabLayout->takeAt(index);
 
@@ -111,11 +87,11 @@ void TabWidget::remove(int index)
             delete tabLabel;
         }
 
-        QLayoutItem* page = m_contentsLayout->takeAt(index);
+        QLayoutItem* page = m_contentsStackedLayout->takeAt(index);
 
         if(page != nullptr && page->widget() != nullptr)
         {
-            m_contentsLayout->removeItem(page);
+            m_contentsStackedLayout->removeItem(page);
 
             page->widget()->setParent(nullptr);
         }
@@ -124,9 +100,23 @@ void TabWidget::remove(int index)
 
 void TabWidget::setContentsMargins(const QMargins &margins)
 {
-    if(m_mainLayout != nullptr && !margins.isNull())
+    if(m_contentsLayout != nullptr && !margins.isNull())
     {
-        m_mainLayout->setContentsMargins(margins);
+        m_contentsLayout->setContentsMargins(margins);
+    }
+}
+
+void TabWidget::setLabelMargins(const QMargins &margins)
+{
+    if(m_tabPosition == North || m_tabPosition == South)
+    {
+        m_tabLabelBackgroundHLayout->setContentsMargins(margins);
+        m_tabLabelBackgroundVLayout->setMargin(0);
+    }
+    else
+    {
+        m_tabLabelBackgroundVLayout->setContentsMargins(margins);
+        m_tabLabelBackgroundHLayout->setMargin(0);
     }
 }
 
@@ -136,6 +126,18 @@ void TabWidget::setSpacing(int spacing)
     {
         m_mainLayout->setSpacing(spacing);
     }
+}
+
+int TabWidget::spacing()
+{
+    int ret = -1;
+
+    if(m_mainLayout != nullptr)
+    {
+        ret = m_mainLayout->spacing();
+    }
+
+    return ret;
 }
 
 void TabWidget::setTabLabelSpacing(int spacing)
@@ -165,41 +167,69 @@ void TabWidget::setTabPosition(TabWidget::TabPosition position)
     {
         m_tabPosition = position;
 
-        Qt::Alignment align;
+//        Qt::Alignment align;
         int row = 0;
         int column = 0;
 
         if(position == North)
         {
-            align = Qt::AlignLeft;
+//            align = Qt::AlignLeft;
             row = 0;
             column = 1;
         }
         else if(position == South)
         {
-            align = Qt::AlignLeft;
+//            align = Qt::AlignLeft;
             row = 2;
             column = 1;
         }
         else if(position == West)
         {
-            align = Qt::AlignTop;
+//            align = Qt::AlignTop;
             row = 1;
             column = 0;
         }
         else
         {
-            align = Qt::AlignTop;
+//            align = Qt::AlignTop;
             row = 1;
             column = 2;
         }
 
         setTabLabelSpacing(m_spacing);
 
-        m_mainLayout->removeWidget(m_tabLabelWidget);
-        m_mainLayout->addWidget(m_tabLabelWidget, row, column, align);
+        m_mainLayout->removeWidget(m_tabLabelBackgroundWidget);
+        m_mainLayout->addWidget(m_tabLabelBackgroundWidget, row, column/*, align*/);
 
         updateTabLabelWidget();
+    }
+}
+
+void TabWidget::setTabLabelStyleSheet(const QString& styleSheet)
+{
+    if(m_tabLabelBackgroundWidget != nullptr && !styleSheet.isEmpty())
+    {
+        m_tabLabelBackgroundWidget->setStyleSheet(styleSheet);
+    }
+}
+
+int TabWidget::currentIndex() const
+{
+    int ret = -1;
+
+    if(m_contentsStackedLayout != nullptr)
+    {
+        ret = m_contentsStackedLayout->currentIndex();
+    }
+
+    return ret;
+}
+
+void TabWidget::setCurrentIndex(int index)
+{
+    if(m_contentsStackedLayout != nullptr)
+    {
+        m_contentsStackedLayout->setCurrentIndex(index);
     }
 }
 
@@ -207,13 +237,14 @@ void TabWidget::stackedWidgetChanged()
 {
     TabLabel* label = qobject_cast<TabLabel*>(sender());
 
-    if(label != nullptr && m_tabLayout != nullptr && m_contentsLayout != nullptr)
+    if(label != nullptr && m_tabLayout != nullptr && m_contentsStackedLayout != nullptr)
     {
         int index = m_tabLayout->indexOf(label);
 
-        if(-1 < index && index < m_contentsLayout->count())
+        if(-1 < index && index < m_contentsStackedLayout->count())
         {
-            m_contentsLayout->setCurrentIndex(index);
+            m_contentsStackedLayout->setCurrentIndex(index);
+            emit currentChanged(index);
         }
     }
 }
@@ -224,16 +255,40 @@ void TabWidget::initUI()
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
 
-    m_tabLabelWidget = new QWidget(this);
+    m_tabLabelBackgroundWidget = new QWidget();
+    m_tabLabelBackgroundWidget->setStyleSheet("QWidget{background:transparent;}");
+
+    m_tabLabelBackgroundHLayout = new QHBoxLayout();
+    m_tabLabelBackgroundHLayout->setMargin(0);
+    m_tabLabelBackgroundHLayout->setSpacing(0);
+
+    m_tabLabelBackgroundVLayout = new QVBoxLayout();
+    m_tabLabelBackgroundVLayout->setMargin(0);
+    m_tabLabelBackgroundVLayout->setSpacing(0);
+
+    m_tabLabelWidget = new QWidget(m_tabLabelBackgroundWidget);
     m_tabLabelWidget->setStyleSheet("QWidget{background:transparent;}");
 
     m_tabLayout = new FlowLayout(-1, 0, 0);
     m_tabLayout->setMargin(0);
     m_tabLabelWidget->setLayout(m_tabLayout);
 
-    m_contentsLayout = new QStackedLayout();
+    m_tabLabelBackgroundHLayout->addWidget(m_tabLabelWidget);
+    m_tabLabelBackgroundHLayout->addStretch();
 
-    m_mainLayout->addWidget(m_tabLabelWidget, 0, 1, Qt::AlignLeft);
+    m_tabLabelBackgroundVLayout->addLayout(m_tabLabelBackgroundHLayout);
+    m_tabLabelBackgroundVLayout->addStretch();
+
+    m_tabLabelBackgroundWidget->setLayout(m_tabLabelBackgroundVLayout);
+
+    m_contentsLayout = new QHBoxLayout();
+    m_contentsLayout->setMargin(0);
+    m_contentsLayout->setSpacing(0);
+
+    m_contentsStackedLayout = new QStackedLayout();
+    m_contentsLayout->addLayout(m_contentsStackedLayout);
+
+    m_mainLayout->addWidget(m_tabLabelBackgroundWidget, 0, 1);
     m_mainLayout->addLayout(m_contentsLayout, 1, 1);
 
     setLayout(m_mainLayout);
@@ -272,6 +327,15 @@ void TabWidget::updateTabLabelWidget()
         if(width && height)
         {
             m_tabLabelWidget->setFixedSize(width, height);
+
+            if(m_tabPosition == North || m_tabPosition == South)
+            {
+                m_tabLabelBackgroundWidget->setFixedHeight(height);
+            }
+            else
+            {
+                m_tabLabelBackgroundWidget->setFixedWidth(width);
+            }
         }
     }
 }
